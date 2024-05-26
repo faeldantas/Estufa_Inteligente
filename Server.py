@@ -1,6 +1,5 @@
 import socket
 import threading
-import multiprocessing
 
 class ServerManager:
     def __init__(self, host='0.0.0.0', port=9999, ready_event=None):
@@ -20,7 +19,6 @@ class ServerManager:
             print("Server is ready and listening for connections.")
         else:
             print("Tá passando errado")
-                  
 
         while True:
             client_socket, addr = self.server.accept()
@@ -38,9 +36,7 @@ class ServerManager:
                 print(f"Received: {data}")
                 response = "Comando para atuador"
                 client_socket.send(response.encode('utf-8'))
-            except:
+            except Exception as e:
+                print(f"Erro no cliente: {e}")
                 break
         client_socket.close()
-
-server = ServerManager()
-server.start_server()

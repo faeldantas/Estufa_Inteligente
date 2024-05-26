@@ -1,14 +1,18 @@
-import multiprocessing
+import threading
 from Server import ServerManager
 from Sensor import Sensor
 from Atuador import Atuador
+
+temperatura = 25
+umidade = 0.3
+co2 = 0.02
 
 def start_server(ready_event):
     server = ServerManager(ready_event=ready_event)
     server.start_server()
 
 def start_sensor(ready_event, sensor_name):
-    sensor = Sensor(ready_event=ready_event, name=sensor_name)
+    sensor = Sensor(name=sensor_name, ready_event=ready_event)
     sensor.run()
 
 def start_actuator(ready_event):
@@ -17,25 +21,30 @@ def start_actuator(ready_event):
 
 if __name__ == "__main__":
     # Cria o evento de sincronização
-    event = multiprocessing.Event()
+    ready_event = threading.Event()
 
-    # Cria os processos
-    server_process = multiprocessing.Process(target=start_server, args=(event))
-    sensor_process1 = multiprocessing.Process(target=start_sensor, args=(event, "Sensor de Temperatura"))
-    sensor_process2 = multiprocessing.Process(target=start_sensor, args=(event, "Sensor de umidade"))
-    actuator_process1 = multiprocessing.Process(target=start_actuator, args=(event,))
-    actuator_process2 = multiprocessing.Process(target=start_actuator, args=(event,))
+    # Cria as threads
+    server_thread = threading.Thread(target=start_server, args=(ready_event,))
+    sensor_thread1 = threading.Thread(target=start_sensor, args=(ready_event, "Sensor de Temperatura"))
+    sensor_thread2 = threading.Thread(target=start_sensor, args=(ready_event, "Sensor de Umidade"))
+    actuator_thread1 = threading.Thread(target=start_actuator, args=(ready_event,))
+    actuator_thread2 = threading.Thread(target=start_actuator, args=(ready_event,))
 
-    # Inicia os processos
-    server_process.start()
-    sensor_process1.start()
-    sensor_process2.start()
-    actuator_process1.start()
-    actuator_process2.start()
+    # Inicia as threads
+    print("Starting server thread...")
+    server_thread.start()
+    print("Iniciando Sensor de temperatura...")
+    sensor_thread1.start()
+    print("Iniciando Sensor de Umidade...")
+    sensor_thread2.start()
+    print("Starting actuator thread 1...")
+    actuator_thread1.start()
+    print("Starting actuator thread 2...")
+    actuator_thread2.start()
 
-    # Espera que os processos terminem (opcional)
-    server_process.join()
-    sensor_process1.join()
-    sensor_process2.join()
-    actuator_process1.join()
-    actuator_process2.join()
+    # Espera que as threads terminem (opcional)
+    server_thread.join()
+    sensor_thread1.join()
+    sensor_thread2.join()
+    actuator_thread1.join()
+    actuator_thread2.join()
