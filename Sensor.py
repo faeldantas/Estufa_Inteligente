@@ -4,7 +4,8 @@ import threading
 import json
 
 class Sensor:
-    def __init__(self, name, ambiente, server_host='127.0.0.1', server_port=9999, ready_event=None):
+    def __init__(self, id, name, ambiente, server_host='127.0.0.1', server_port=9999, ready_event=None):
+        self.id = id
         self.name = name
         self.ambiente = ambiente
         self.server_host = server_host
@@ -22,9 +23,9 @@ class Sensor:
     def send_data(self):
             try:
                 while True:
-                    if self.name == "Sensor de Temperatura":
+                    if self.name == "Temperatura interna": #mudar para id tudo que usa nome
                         data = {"sensor": self.name, "type": "temperatura", "value": self.ambiente.get_temperatura()}
-                    elif self.name == "Sensor de Umidade":
+                    elif self.name == "Umidade do solo":
                         data = {"sensor": self.name, "type": "umidade", "value": self.ambiente.get_umidade()}
                     else:
                         data = {"sensor": self.name, "type": "co2", "value": self.ambiente.get_co2()}
@@ -47,13 +48,13 @@ class Sensor:
             self.send_data()
 
 class Sensor_temp(Sensor):
-    def __init__(self, name, ambiente, server_host='127.0.0.1', server_port=9999, ready_event=None):
-        super().__init__(name, ambiente, server_host, server_port, ready_event)
+    def __init__(self, id, name, ambiente, server_host='127.0.0.1', server_port=9999, ready_event=None):
+        super().__init__(id, name, ambiente, server_host, server_port, ready_event)
 
 class Sensor_umid(Sensor):
-    def __init__(self, name, ambiente, server_host='127.0.0.1', server_port=9999, ready_event=None):
-        super().__init__(name, ambiente, server_host, server_port, ready_event)
+    def __init__(self, id, name, ambiente, server_host='127.0.0.1', server_port=9999, ready_event=None):
+        super().__init__(id, name, ambiente, server_host, server_port, ready_event)
 
 class Sensor_co2(Sensor):
-    def __init__(self, name, ambiente, server_host='127.0.0.1', server_port=9999, ready_event=None):
-        super().__init__(name, ambiente, server_host, server_port, ready_event)
+    def __init__(self, id, name, ambiente, server_host='127.0.0.1', server_port=9999, ready_event=None):
+        super().__init__(id, name, ambiente, server_host, server_port, ready_event)

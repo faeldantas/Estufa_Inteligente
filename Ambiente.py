@@ -2,10 +2,16 @@ import random
 
 
 class Ambiente:
-    def __init__(self, temp, umid, co2):
+    def __init__(self, temp, umid, co2, min_temp, max_temp, min_umid, max_umid, min_co2, max_co2):
         self.temp = temp
         self.umid = umid
         self.co2 = co2
+        self.min_temp = min_temp
+        self.max_temp = max_temp
+        self.min_umid = min_umid
+        self.max_umid = max_umid
+        self.min_co2 = min_co2
+        self.max_co2 = max_co2
 
     def set_temperatura(self, valor):
         self.temp = valor
@@ -30,7 +36,7 @@ class Ambiente:
 
     def update_values(self):
         # Simular variação gradual para a temperatura
-        temp_change = random.choice([-1, 0, 1, 2])
+        temp_change = random.choice([-2, -1, 0, 1, 2])
         self.temp += temp_change
         if self.temp < 0:
             self.temp = 0  # Garantir que a temperatura não fique negativa
