@@ -2,7 +2,6 @@ import socket
 import threading
 import time
 import json
-import select
 
 class ServerManager:
     def __init__(self, ambiente, host='127.0.0.1', port=9999, ready_event=None):
@@ -53,122 +52,131 @@ class ServerManager:
 
 
     def regulate_periodically(self):
+        # Dicionário para rastrear o estado dos atuadores
+        atuator_states = {
+            "AR02": False,  # Resfriador inicialmente desligado
+            "AA01": False,  # Aquecedor inicialmente desligado
+            "AI03": False,  # Umidificador inicialmente desligado
+            "ACO2": False   # Atuador de CO2 inicialmente desligado
+        }
+
         while True:
             try:
-                #verifica Resfriador
+                # Verifica Resfriador
                 if self.ambiente.get_temperatura() > self.ambiente.max_temp:
-                    print(f"Temperatura acima de {self.ambiente.max_temp}, enviando comando para reduzir temperatura.")
+                    if not atuator_states["AR02"]:
+                        print(f"Temperatura acima de {self.ambiente.max_temp}, enviando comando para reduzir temperatura.")
+                        for client in self.client_sockets:
+                            try:
+                                command = json.dumps({
+                                    "target": "AR02",
+                                    "command": "turn_on",
+                                }) + "\n"
+                                client.send(command.encode('utf-8'))
+                                atuator_states["AR02"] = True  # Atualiza estado do atuador
+                            except Exception as client_error:
+                                print(f"Erro ao enviar comando para um cliente: {client_error}")
+                elif atuator_states["AR02"]:  # Só envia "turn_off" se estiver ligado
                     for client in self.client_sockets:
                         try:
-                            #print("Enviando comando para um cliente." + '\n')
-                            command = json.dumps({
-                                "target": "AR02",
-                                "command": "turn_on",
-                            }) + "\n"
-                            client.send(command.encode('utf-8'))
-                        except Exception as client_error:
-                            print(f"Erro ao enviar comando para um cliente: {client_error}")
-                else:
-                    for client in self.client_sockets:
-                        try:
-                            #print("Enviando comando para um cliente." + '\n')
                             command = json.dumps({
                                 "target": "AR02",
                                 "command": "turn_off",
                             }) + "\n"
                             client.send(command.encode('utf-8'))
+                            atuator_states["AR02"] = False  # Atualiza estado do atuador
                         except Exception as client_error:
                             print(f"Erro ao enviar comando para um cliente: {client_error}")
-                time.sleep(1)  # Esperar 5 segundos antes de enviar o próximo comando
 
-                #varifica aquecedor
+                time.sleep(1)
+
+                # Verifica Aquecedor
                 if self.ambiente.get_temperatura() < self.ambiente.min_temp:
-                    print(f"Temperatura a baixo de {self.ambiente.max_temp}, enviando comando para aumenta-la.")
+                    if not atuator_states["AA01"]:
+                        print(f"Temperatura abaixo de {self.ambiente.min_temp}, enviando comando para aumenta-la.")
+                        for client in self.client_sockets:
+                            try:
+                                command = json.dumps({
+                                    "target": "AA01",
+                                    "command": "turn_on",
+                                }) + "\n"
+                                client.send(command.encode('utf-8'))
+                                atuator_states["AA01"] = True  # Atualiza estado do atuador
+                            except Exception as client_error:
+                                print(f"Erro ao enviar comando para um cliente: {client_error}")
+                elif atuator_states["AA01"]:  # Só envia "turn_off" se estiver ligado
                     for client in self.client_sockets:
                         try:
-                            #print("Enviando comando para um cliente." + '\n')
-                            command = json.dumps({
-                                "target": "AA01",
-                                "command": "turn_on",
-                            }) + "\n"
-                            client.send(command.encode('utf-8'))
-                        except Exception as client_error:
-                            print(f"Erro ao enviar comando para um cliente: {client_error}")
-                else:
-                    for client in self.client_sockets:
-                        try:
-                            #print("Enviando comando para um cliente." + '\n')
-                            print("tentando desligar")
                             command = json.dumps({
                                 "target": "AA01",
                                 "command": "turn_off",
                             }) + "\n"
                             client.send(command.encode('utf-8'))
+                            atuator_states["AA01"] = False  # Atualiza estado do atuador
                         except Exception as client_error:
                             print(f"Erro ao enviar comando para um cliente: {client_error}")
-                time.sleep(1)  # Esperar 5 segundos antes de enviar o próximo comando
 
+                time.sleep(1)
 
-                #verifica umidade
+                # Verifica Umidade
                 if self.ambiente.get_umidade() < self.ambiente.min_umid:
-                    print(f"Umidade a baixo de {self.ambiente.min_umid}%, enviando comando para aumenta-la.")
+                    if not atuator_states["AI03"]:
+                        print(f"Umidade abaixo de {self.ambiente.min_umid}%, enviando comando para aumenta-la.")
+                        for client in self.client_sockets:
+                            try:
+                                command = json.dumps({
+                                    "target": "AI03",
+                                    "command": "turn_on",
+                                }) + "\n"
+                                client.send(command.encode('utf-8'))
+                                atuator_states["AI03"] = True  # Atualiza estado do atuador
+                            except Exception as client_error:
+                                print(f"Erro ao enviar comando para um cliente: {client_error}")
+                elif atuator_states["AI03"]:  # Só envia "turn_off" se estiver ligado
                     for client in self.client_sockets:
                         try:
-                            #print("Enviando comando para um cliente." + '\n')
-                            command = json.dumps({
-                                "target": "AI03",
-                                "command": "turn_on",
-                                "value": self.ambiente.get_co2() + 1,
-                            }) + "\n"
-                            client.send(command.encode('utf-8'))
-                        except Exception as client_error:
-                            print(f"Erro ao enviar comando para um cliente: {client_error}")
-                else:
-                    for client in self.client_sockets:
-                        try:
-                            #print("Enviando comando para um cliente." + '\n')
                             command = json.dumps({
                                 "target": "AI03",
                                 "command": "turn_off",
-                                "value": self.ambiente.get_co2() + 1,
                             }) + "\n"
                             client.send(command.encode('utf-8'))
+                            atuator_states["AI03"] = False  # Atualiza estado do atuador
                         except Exception as client_error:
                             print(f"Erro ao enviar comando para um cliente: {client_error}")
 
-                time.sleep(1) 
+                time.sleep(1)
 
-                #Verifica CO2
+                # Verifica CO2
                 if self.ambiente.get_co2() < self.ambiente.min_co2:
-                    print("Nivvel de CO2 baixo, enviando comando para aumenta-lo.")
+                    if not atuator_states["ACO2"]:
+                        print("Nivel de CO2 baixo, enviando comando para aumentá-lo.")
+                        for client in self.client_sockets:
+                            try:
+                                command = json.dumps({
+                                    "target": "ACO2",
+                                    "command": "turn_on",
+                                }) + "\n"
+                                client.send(command.encode('utf-8'))
+                                atuator_states["ACO2"] = True  # Atualiza estado do atuador
+                            except Exception as client_error:
+                                print(f"Erro ao enviar comando para um cliente: {client_error}")
+                elif atuator_states["ACO2"]:  # Só envia "turn_off" se estiver ligado
                     for client in self.client_sockets:
                         try:
-                            #print("Enviando comando para um cliente." + '\n')
                             command = json.dumps({
                                 "target": "ACO2",
-                                "command": "turn_on",
+                                "command": "turn_off",
                             }) + "\n"
                             client.send(command.encode('utf-8'))
+                            atuator_states["ACO2"] = False  # Atualiza estado do atuador
                         except Exception as client_error:
                             print(f"Erro ao enviar comando para um cliente: {client_error}")
-                else:
-                    for client in self.client_sockets:
-                        try:
-                            #print("Enviando comando para um cliente." + '\n')
-                            command = json.dumps({
-                                "target": "ACO2",
-                                "command": "turn_on",
-                            }) + "\n"
-                            client.send(command.encode('utf-8'))
-                        except Exception as client_error:
-                            print(f"Erro ao enviar comando para um cliente: {client_error}")
-                time.sleep(1)  # Esperar 5 segundos antes de enviar o próximo comando
 
-                
+                time.sleep(1)
+
             except Exception as e:
                 print(f"Erro no envio de comando: {e}")
                 break
-
 
 
     def start_server(self):

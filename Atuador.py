@@ -13,13 +13,13 @@ class Atuador:
         self.server_host = '127.0.0.1'
         self.server_port = 9999
         self.active = False
-
+        self.actuating_thread = None
 
     def connect(self):
         try:
-            print(f"{self.name} tentando conectar ao servidor..." + "\n")
+            print(f"{self.name} tentando conectar ao servidor...\n")
             if self.ready_event:
-                print(f"{self.name} esperando o servidor estar pronto..." + "\n")
+                print(f"{self.name} esperando o servidor estar pronto...\n")
                 self.ready_event.wait()
             self.client.connect((self.server_host, self.server_port))
             print(f"{self.name} conectado ao servidor.")
@@ -33,10 +33,10 @@ class Atuador:
                 response = self.client.recv(1024).decode('utf-8')
                 if response:
                     command = json.loads(response)
-                    print(f'Comando recebido: {command}' + '\n')
+                    #print(f'Comando recebido: {command}\n')
                     if command['target'] == self.id:
                         self.execute_command(command)
-                        print('Comando executado' + '\n')
+                        #print('Comando executado\n')
         except Exception as e:
             print(f"Erro ao receber comando: {e}")
 
@@ -50,8 +50,8 @@ class Atuador:
             elif self.id == "AI03":
                 self.ambiente.set_umidade(self.ambiente.get_umidade() + 5.0)
             elif self.id == "ACO2":
-                self.ambiente.set_co2(self.ambiente.get_co2() + 0.3)
-        
+                self.ambiente.set_co2(self.ambiente.get_co2() + 10)
+            time.sleep(2)
 
 
     def execute_command(self, command):
@@ -60,17 +60,13 @@ class Atuador:
         if action == "turn_on":
             print(f"{self.name} ativado.")
             self.active = True
-            self.start_actuating()
+            if self.actuating_thread is None or not self.actuating_thread.is_alive():
+                self.actuating_thread = threading.Thread(target=self.start_actuating)
+                self.actuating_thread.start()
         elif action == "turn_off":
             print(f"{self.name} desativado.")
             self.active = False
-        elif action == "set_temperatura":
-            print(f"{self.name} ajustando temperatura para {value}.")
-            self.ambiente.set_temperatura(value)
-            # Aqui você pode adicionar a lógica para ajustar a temperatura
-        else:
-            print("Deu ruim")
-    
+
 
     def run(self):
         self.connect()
