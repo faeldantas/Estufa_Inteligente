@@ -1,16 +1,11 @@
 import random
 
+#Classe criada para simular monitoramento e mudanças de ambiente
 class Ambiente:
-    def __init__(self, temp, umid, co2, min_temp, max_temp, min_umid, max_umid, min_co2, max_co2):
+    def __init__(self, temp, umid, co2, min_temp=None, max_temp=None, min_umid=None, max_umid=None, min_co2=None, max_co2=None):
         self.temp = temp
         self.umid = umid
         self.co2 = co2
-        self.min_temp = min_temp
-        self.max_temp = max_temp
-        self.min_umid = min_umid
-        self.max_umid = max_umid
-        self.min_co2 = min_co2
-        self.max_co2 = max_co2
 
     def set_temperatura(self, valor):
         self.temp = valor
@@ -33,7 +28,7 @@ class Ambiente:
     def get_co2(self):
         return self.co2
 
-
+    #Modifica valores gradualmente(Tenta simular comportamento natural)
     def update_values(self):
         # Simular variação gradual para a temperatura
         temp_noise = random.choice([-2, -1, 0, 1, 2])
@@ -68,3 +63,11 @@ class Ambiente:
         self.co2 += noise
         if self.co2 < 0:
             self.co2 = 0  
+    
+    def set_limits(self, min_temp, max_temp, min_umid, max_umid, min_co2, max_co2):
+        self.min_temp = min_temp
+        self.max_temp = max_temp
+        self.min_umid = min_umid
+        self.max_umid = max_umid
+        self.min_co2 = min_co2
+        self.max_co2 = max_co2

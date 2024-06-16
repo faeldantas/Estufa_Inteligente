@@ -26,7 +26,7 @@ class Atuador:
         except Exception as e:
             print(f"Erro ao conectar ao servidor: {e}")
 
-
+    #Espera comandos do servidor
     def listen_for_commands(self):
         try:
             while True:
@@ -40,7 +40,7 @@ class Atuador:
         except Exception as e:
             print(f"Erro ao receber comando: {e}")
 
-
+    #Modifica parâmetros no ambiente
     def start_actuating(self):
         while self.active:
             if self.id == "AA01":
@@ -53,7 +53,7 @@ class Atuador:
                 self.ambiente.set_co2(self.ambiente.get_co2() + 10)
             time.sleep(2)
 
-
+    #Define rotina de acordo com o comando enviado
     def execute_command(self, command):
         action = command['command']
         value = command.get('value')
@@ -61,7 +61,7 @@ class Atuador:
             print(f"{self.name} ativado.")
             self.active = True
             if self.actuating_thread is None or not self.actuating_thread.is_alive():
-                self.actuating_thread = threading.Thread(target=self.start_actuating)
+                self.actuating_thread = threading.Thread(target=self.start_actuating)#As mudanças serão feitas em thread separada para melhor acoplamento e independêcia
                 self.actuating_thread.start()
         elif action == "turn_off":
             print(f"{self.name} desativado.")

@@ -4,6 +4,7 @@ from Sensor import *
 from Atuador import Atuador
 from Ambiente import Ambiente
 
+
 def start_server(ready_event, ambiente):
     server = ServerManager(ready_event=ready_event, ambiente=ambiente)
     server.start_server()
@@ -36,7 +37,7 @@ def simulate_environment_changes(ambiente, interval):
 
 if __name__ == "__main__":
     ready_event = threading.Event()
-    ambiente = Ambiente(35, 80.0, 1000, 20, 30, 50, 80, 1500, 1600)
+    ambiente = Ambiente(35, 80.0, 1000, 20, 30, 50, 80, 1100, 1600)
 
     server_thread = threading.Thread(target=start_server, args=(ready_event, ambiente))
     sensor1 = threading.Thread(target=start_sensor_temp, args=(ready_event, "TI001", "Temperatura interna", ambiente))

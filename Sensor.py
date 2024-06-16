@@ -13,25 +13,29 @@ class Sensor:
         self.ready_event = ready_event
     
     def connect(self):
-        if self.ready_event:
-            print(f"{self.name} is waiting for the server to be ready." + "\n")
-            self.ready_event.wait()  # Espera até o servidor estar pronto
-        self.client.connect((self.server_host, self.server_port))
-        print(f"{self.name} is connecting to the server."+ "\n")
+        try:
+            print(f"{self.name} tentando conectar ao servidor...\n")
+            if self.ready_event:
+                print(f"{self.name} esperando o servidor estar pronto...\n")
+                self.ready_event.wait()
+            self.client.connect((self.server_host, self.server_port))
+            print(f"{self.name} conectado ao servidor.")
+        except Exception as e:
+            print(f"Erro ao conectar ao servidor: {e}")
 
     def send_data(self):
             try:
                 while True:
-                    if self.name == "Temperatura interna": #mudar para id tudo que usa nome
+                    #Determina qual menságem será enviada pelo protocolo
+                    if self.id == "TI001": #mudar para id tudo que usa nome
                         data = {"sensor": self.name, "type": "temperatura", "value": self.ambiente.get_temperatura()}
-                    elif self.name == "Umidade do solo":
+                    elif self.id == "US002":
                         data = {"sensor": self.name, "type": "umidade", "value": self.ambiente.get_umidade()}
                     else:
                         data = {"sensor": self.name, "type": "co2", "value": self.ambiente.get_co2()}
                     
                     message = json.dumps(data) + "\n"
                     self.client.send(message.encode('utf-8'))
-                    #print(f"Atualizacao de sensor enviada: {message.strip()}")
                     try:
                         response = self.client.recv(1024).decode('utf-8')
                         #print(f"Received from server: {response}")
