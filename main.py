@@ -10,18 +10,8 @@ def start_server(ready_event, ambiente):
     server.start_server()
 
 
-def start_sensor_temp(ready_event, id, name, ambiente,):
-    sensor = Sensor_temp(ready_event=ready_event, id=id, name=name, ambiente=ambiente)
-    sensor.run()
-
-
-def start_sensor_umid(ready_event, id, name, ambiente):
-    sensor = Sensor_umid(ready_event=ready_event, id=id, name=name, ambiente=ambiente)
-    sensor.run()
-
-
-def start_sensor_co2(ready_event, id, name, ambiente):
-    sensor = Sensor_co2(ready_event=ready_event, id=id, name=name, ambiente=ambiente)
+def start_sensor(ready_event, id, name, ambiente,):
+    sensor = Sensor(ready_event=ready_event, id=id, name=name, ambiente=ambiente)
     sensor.run()
 
 
@@ -40,9 +30,9 @@ if __name__ == "__main__":
     ambiente = Ambiente(35, 80.0, 1000, 20, 30, 50, 80, 1100, 1600)
 
     server_thread = threading.Thread(target=start_server, args=(ready_event, ambiente))
-    sensor1 = threading.Thread(target=start_sensor_temp, args=(ready_event, "TI001", "Temperatura interna", ambiente))
-    sensor2 = threading.Thread(target=start_sensor_umid, args=(ready_event, "US002","Umidade do solo", ambiente))
-    sensor3 = threading.Thread(target=start_sensor_co2, args=(ready_event, "NCO20","Nivel de CO2", ambiente))
+    sensor1 = threading.Thread(target=start_sensor, args=(ready_event, "TI001", "Temperatura interna", ambiente))
+    sensor2 = threading.Thread(target=start_sensor, args=(ready_event, "US002","Umidade do solo", ambiente))
+    sensor3 = threading.Thread(target=start_sensor, args=(ready_event, "NCO20","Nivel de CO2", ambiente))
     atuador1 = threading.Thread(target=start_actuator, args=(ready_event, "AA01", "Aquecedor", ambiente))
     atuador2 = threading.Thread(target=start_actuator, args=(ready_event, "AR02", "Resfriador", ambiente))
     atuador3 = threading.Thread(target=start_actuator, args=(ready_event, "AI03", "Sisitema de irrigacao", ambiente))

@@ -49,18 +49,3 @@ class Sensor:
     def run(self):
             self.connect()
             self.send_data()
-
-
-class Sensor_temp(Sensor):
-    def __init__(self, id, name, ambiente, server_host='127.0.0.1', server_port=9999, ready_event=None):
-        super().__init__(id, name, ambiente, server_host, server_port, ready_event)
-
-
-class Sensor_umid(Sensor):
-    def __init__(self, id, name, ambiente, server_host='127.0.0.1', server_port=9999, ready_event=None):
-        super().__init__(id, name, ambiente, server_host, server_port, ready_event)
-
-
-class Sensor_co2(Sensor):
-    def __init__(self, id, name, ambiente, server_host='127.0.0.1', server_port=9999, ready_event=None):
-        super().__init__(id, name, ambiente, server_host, server_port, ready_event)

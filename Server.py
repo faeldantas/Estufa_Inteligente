@@ -238,10 +238,3 @@ class ServerManager:
             client_socket, addr = self.server.accept()
             client_handler = threading.Thread(target=self.handle_client, args=(client_socket, addr))
             client_handler.start()
-
-# Uso da classe ServerManager3
-# Define o ambiente com os métodos get_temperatura, get_umidade e get_co2, e set_limits conforme necessário
-# ambiente = ...
-
-# server = ServerManager3(ambiente)
-# server.start_server()
