@@ -58,7 +58,7 @@ class ServerManager:
                                 client_socket.send(response.encode('utf-8'))
 
                         elif 'sensor' in sensor_data and 'type' in sensor_data and 'value' in sensor_data:
-                            print(f"Recebido de {sensor_data['sensor']}: {sensor_data['type']} = {sensor_data['value']}")
+                            #print(f"Recebido de {sensor_data['sensor']}: {sensor_data['type']} = {sensor_data['value']}")
                             if sensor_data['type'] == 'temperatura':
                                 self.latest_data['temperatura'] = sensor_data['value']
                             elif sensor_data['type'] == 'umidade':

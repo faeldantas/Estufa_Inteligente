@@ -11,7 +11,7 @@ def start_server(ready_event, ambiente):
 
 
 def start_sensor(ready_event, id, name, ambiente,):
-    sensor = Sensor(ready_event=ready_event, id=id, name=name, ambiente=ambiente)
+    sensor = Sensor(ready_event=ready_event, sensor_id=id, name=name, ambiente=ambiente)
     sensor.run()
 
 
@@ -24,6 +24,7 @@ def simulate_environment_changes(ambiente, interval):
     while True:
         ambiente.update_values()
         time.sleep(interval)
+
 
 if __name__ == "__main__":
     ready_event = threading.Event()

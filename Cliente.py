@@ -15,6 +15,7 @@ class Cliente:
         self.client_socket.connect((self.server_host, self.server_port))
         print("Cliente conectado ao servidor.")
 
+
     def send_environment_limits(self):
         try:
             temp_min = int(input("Digite a temperatura mínima: "))
@@ -33,36 +34,49 @@ class Cliente:
                 "min_co2": co2_min,
                 "max_co2": co2_max
             }
+
             message = json.dumps(environment_limits) + "\n"
             self.client_socket.sendall(message.encode('utf-8'))  # Use sendall para garantir que todos os dados sejam enviados
             print("Limites do ambiente enviados para o servidor.")
+            
         except Exception as e:
             print(f"Erro ao enviar limites do ambiente: {e}")
 
-    def request_latest_data(self):
+
+    def request_data(self):
         try:
             request = json.dumps({"action": "get_latest_data"}) + "\n"
             self.client_socket.sendall(request.encode('utf-8'))
             response = self.client_socket.recv(1024).decode('utf-8')
+            data = None
             if response:
                 data = json.loads(response)
-                print(f"Último registro de dados: {data}")
+                # print(f"Último registro de dados: {data}")
             else:
                 print("Nenhum dado recebido do servidor.")
+
+            return data
         except Exception as e:
             print(f"Erro ao solicitar o último registro de dados: {e}")
 
-    def receive_server_commands(self):
-        while True:
-            try:
-                response = self.client_socket.recv(1024).decode('utf-8')
-                if response:
-                    print(f"Comando recebido do servidor: {response}")
-                else:
-                    break  # Se não há dados, a conexão foi fechada
-            except Exception as e:
-                print(f"Erro ao receber comando do servidor: {e}")
-                break
+
+    def request_latest_data(self):
+        data = self.request_data()
+        if data is not None:
+            print("\nEscolha uma opção:")
+            print("1. Sensor de Temperatura")
+            print("2. Sensor de Umidade")
+            print("3. Sensor de CO2")
+            choice = input("Digite sua escolha: ")
+            if choice == '1':
+                print(f"Temperatura: {data['temperatura']}C°")
+            elif choice == '2':
+                print(f"Umidade: {data['umidade']}%")
+            elif choice == '3':
+                print(f"CO2: {data['co2']} ppm ")
+            else:
+                print("Opção inválida. Tente novamente.")
+
 
     def run(self):
         self.connect()
