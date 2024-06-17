@@ -10,13 +10,19 @@ class Cliente:
         self.ready_event = ready_event
 
     def connect(self):
+        """Tenta conectar ao servidor."""
         if self.ready_event:
             self.ready_event.wait()  # Espera até o servidor estar pronto
-        self.client_socket.connect((self.server_host, self.server_port))
-        print("Cliente conectado ao servidor.")
+        try:
+            self.client_socket.connect((self.server_host, self.server_port))
+            print("Cliente conectado ao servidor.")
+        except socket.error as e:
+            print(f"Erro ao conectar ao servidor: {e}")
+            self.client_socket.close()
 
 
-    def send_environment_limits(self):
+    def get_envioronment_limits(self):
+        """Obtém os limites do ambiente do usuário."""
         try:
             temp_min = int(input("Digite a temperatura mínima: "))
             temp_max = int(input("Digite a temperatura máxima: "))
@@ -25,7 +31,7 @@ class Cliente:
             co2_min = int(input("Digite o nível de CO2 mínimo: "))
             co2_max = int(input("Digite o nível de CO2 máximo: "))
 
-            environment_limits = {
+            return {
                 "action":'define_limits',
                 "min_temp": temp_min,
                 "max_temp": temp_max,
@@ -34,48 +40,58 @@ class Cliente:
                 "min_co2": co2_min,
                 "max_co2": co2_max
             }
+        except ValueError as e:
+            print(f"Entrada inválida: {e}")
+            return None
 
+
+    def send_environment_limits(self):
+        """Envia os limites do ambiente ao servidor."""
+        environment_limits = self.get_envioronment_limits()
+        if environment_limits is None:
+            return
+        try:
             message = json.dumps(environment_limits) + "\n"
-            self.client_socket.sendall(message.encode('utf-8'))  # Use sendall para garantir que todos os dados sejam enviados
+            self.client_socket.sendall(message.encode('utf-8'))  
             print("Limites do ambiente enviados para o servidor.")
-            
-        except Exception as e:
+
+        except socket.error as e:
             print(f"Erro ao enviar limites do ambiente: {e}")
 
 
     def request_data(self):
+        """Solicita o último registro de dados do servidor."""
         try:
             request = json.dumps({"action": "get_latest_data"}) + "\n"
             self.client_socket.sendall(request.encode('utf-8'))
             response = self.client_socket.recv(1024).decode('utf-8')
-            data = None
             if response:
-                data = json.loads(response)
-                # print(f"Último registro de dados: {data}")
+                return json.loads(response)
             else:
                 print("Nenhum dado recebido do servidor.")
-
-            return data
-        except Exception as e:
+                return None
+            
+        except socket.error as e:
             print(f"Erro ao solicitar o último registro de dados: {e}")
 
 
-    def request_latest_data(self):
-        data = self.request_data()
-        if data is not None:
-            print("\nEscolha uma opção:")
-            print("1. Sensor de Temperatura")
-            print("2. Sensor de Umidade")
-            print("3. Sensor de CO2")
-            choice = input("Digite sua escolha: ")
-            if choice == '1':
-                print(f"Temperatura: {data['temperatura']}C°")
-            elif choice == '2':
-                print(f"Umidade: {data['umidade']}%")
-            elif choice == '3':
-                print(f"CO2: {data['co2']} ppm ")
-            else:
-                print("Opção inválida. Tente novamente.")
+    def display_data(self, data):
+        """Exibe os dados recebidos do servidor conforme a escolha do usuário."""
+        if data is None:
+            return
+        print("\nEscolha uma opção:")
+        print("1. Sensor de Temperatura")
+        print("2. Sensor de Umidade")
+        print("3. Sensor de CO2")
+        choice = input("Digite sua escolha: ")
+        if choice == '1':
+            print(f"Temperatura: {data.get('temperatura', 'N/A')}C°")
+        elif choice == '2':
+            print(f"Umidade: {data.get('umidade', 'N/A')}%")
+        elif choice == '3':
+            print(f"CO2: {data.get('co2', 'N/A')} ppm")
+        else:
+            print("Opção inválida. Tente novamente.")
 
 
     def run(self):
@@ -90,7 +106,8 @@ class Cliente:
             if choice == '1':
                 self.send_environment_limits()
             elif choice == '2':
-                self.request_latest_data()
+                data = self.request_data()
+                self.display_data(data)
             elif choice == '3':
                 print("Encerrando o cliente.")
                 self.client_socket.close()
